@@ -9,15 +9,43 @@ import {
   SignalCellularAlt,
 } from "@material-ui/icons";
 import AddIcon from "@material-ui/icons/Add";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "./SideBar.css";
 import SidebarChannel from "./SidebarChannel";
+import { useSelector } from "react-redux";
+import { selectUser } from "./features/userSlice";
+import db, { auth } from "./firebase";
 
 function SideBar() {
+  const user = useSelector(selectUser);
+  const [channels, setChannels] = useState([]);
+
+  useEffect(() => {
+    db.collection("channels").onSnapshot((snapshot) => {
+      setChannels(
+        snapshot.docs.map((doc) => ({
+          id: doc.id,
+          channel: doc.data(),
+        }))
+      );
+      console.log(channels);
+    });
+  }, []);
+
+  const handleAddChannel = () => {
+    const channelName = prompt("Enter a new channel name");
+
+    if (channelName) {
+      db.collection("channels").add({
+        channelName: channelName,
+      });
+    }
+  };
+
   return (
     <div className="sidebar">
       <div className="sidebar__top">
-        <h3>Clever Programmer</h3>
+        <h3>CODERS</h3>
         <ExpandMore />
       </div>
 
@@ -27,13 +55,16 @@ function SideBar() {
             <ExpandMore />
             <h4>Text Channels</h4>
           </div>
-          <AddIcon className="sidebar__addChannel" />
+          <AddIcon onClick={handleAddChannel} className="sidebar__addChannel" />
         </div>
         <div className="sidebar__channelsList">
-          <SidebarChannel />
-          <SidebarChannel />
-          <SidebarChannel />
-          <SidebarChannel />
+          {channels.map(({ id, channel }) => (
+            <SidebarChannel
+              key={id}
+              id={id}
+              channelName={channel.channelName}
+            />
+          ))}
         </div>
       </div>
 
@@ -50,15 +81,15 @@ function SideBar() {
       </div>
 
       <div className="sidebar__profile">
-        <Avatar />
+        <Avatar src={user.photo} />
         <div className="sidebar__profileInfo">
-          <h3>Raja Rahul</h3>
-          <p>#thisisMyID</p>
+          <h3>{user.displayName}</h3>
+          <p>#{user.uid.substring(0, 5)}</p>
         </div>
         <div className="sidebar__profileIcons">
           <Mic />
           <Headset />
-          <Settings />
+          <Settings onClick={() => auth.signOut()} />
         </div>
       </div>
     </div>

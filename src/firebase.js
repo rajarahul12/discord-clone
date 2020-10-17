@@ -8,12 +8,14 @@ const firebaseConfig = {
   storageBucket: "react-clone-discord.appspot.com",
   messagingSenderId: "809630687948",
   appId: "1:809630687948:web:0dcd23ee8ef947b4a35869",
-  measurementId: "G-5QRZ77TJSS"
+  measurementId: "G-5QRZ77TJSS",
 };
 
 const firebaseApp = firebase.initializeApp(firebaseConfig);
 
 const db = firebaseApp.firestore();
 const auth = firebase.auth();
+const provider = new firebase.auth.GoogleAuthProvider();
 
-export { db, auth };
+export { provider, auth };
+export default db;
